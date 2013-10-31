@@ -41,7 +41,7 @@ nrepl and sync it for you.
 
 ## Installation
 
-Put `[lein-sync "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your
+Put `[lein-sync "0.1.0]` into the `:plugins` vector of your
 `:user` profile.
 
 
