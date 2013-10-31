@@ -1,4 +1,4 @@
-(defproject lein-sync "0.1.0-SNAPSHOT"
+(defproject lein-sync "0.1.0"
   :description "Generate a Clojure file to added dependencies to a REPL."
   :url "http://github.com/phillord/lein-sync"
   :license {:name "Eclipse Public License"
