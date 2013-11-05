@@ -17,6 +17,9 @@
 
 (require 'nrepl)
 
+(defvar nrepl-sync-need-sync nil)
+(make-variable-buffer-local 'nrepl-sync-need-sync)
+
 (defun nrepl-sync-in (host port &optional project)
   "Connect nrepl to HOST and PORT, associate it with the current
 project, and then load .sync.clj in the project root, to set that
@@ -24,13 +27,13 @@ remote REPL up appropriately, for the current project. With a
 prefix arg, this prompts for a project.
 
 See the lein-sync plugin for a way to generate .sync.clj."
-  (setq nrepl-current-clojure-buffer (current-buffer))
   (interactive (list (read-string "Host: " nrepl-host nil nrepl-host)
                      (string-to-number
                       (let ((port (nrepl-default-port)))
                         (read-string "Port: " port nil port)))
                      (when current-prefix-arg
                        (ido-read-directory-name "Project: "))))
+  (setq nrepl-current-clojure-buffer (current-buffer))
   (let ((project-dir
          (nrepl-project-directory-for
           (or project (nrepl-current-dir)))))
@@ -38,16 +41,41 @@ See the lein-sync plugin for a way to generate .sync.clj."
       (let ((process (nrepl-connect host port)))
         (setq nrepl-sync-last process)
         (with-current-buffer (process-buffer process)
+          (setq nrepl-sync-need-sync t)
           (setq nrepl-project-dir project-dir)
-          (message
-           "Eval .sync.clj: %s"
-           (nrepl-send-string-sync
-            (format "(load-file \"%s/.sync.clj\")"
-                    (expand-file-name project-dir)))))
         (message "Connecting to nREPL on %s:%s..." host port)))))
 
+(defun nrepl-message-handler (buffer message)
+  "Make a handler for evaluating and printing result in BUFFER."
+  (lexical-let ((message message))
+    (nrepl-make-response-handler buffer
+                                 (lambda (buffer value)
+                                   (message "value: %s" value)
+                                   (message message))
+                                 '()
+                                 (lambda (buffer err)
+                                   (message "%s" err))
+                                 '())))
+
+(defun nrepl-sync-connect ()
+  (dolist (process (process-list))
+    (with-current-buffer (process-buffer process)
+      (when nrepl-sync-need-sync
+        ;; need load-file maybe here!
+        (let ((sync-string
+               (format "(load-file \"%s/.sync.clj\")"
+                       (expand-file-name nrepl-project-dir))))
+          (setq nrepl-sync-need-sync nil)
+          (message "Synchronizing buffer...")
+          (nrepl-send-string
+           sync-string
+           (nrepl-message-handler (current-buffer)
+                                  "Synchronizing buffer...done"))))))))
+
+(add-hook 'nrepl-connected-hook
+          'nrepl-sync-connect)
 
 (eval-after-load 'clojure-mode
-  '(define-key clojure-mode-map (kbd "C-c M-s") 'nrepl-sync-in))
+  '(define-key clojure-mode-map (kbd "C-c M-d") 'nrepl-sync-in))
 
 (provide 'nrepl-sync)
