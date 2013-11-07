@@ -36,7 +36,7 @@ At the repl, type
     user> (load-file "~/my_project/.sync.clj")
 
 If you are using Emacs and `nrepl.el` then `nrepl-sync.el` will start your
-nrepl and sync it for you.
+nrepl and sync it for you. To use add `(require 'nrepl-sync)` to your .emacs.
 
 
 ## Installation
