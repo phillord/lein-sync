@@ -15,10 +15,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'nrepl)
+(require 'cider)
 
 (defvar nrepl-sync-need-sync nil)
 (make-variable-buffer-local 'nrepl-sync-need-sync)
+
+(defvar nrepl-sync-synced-buffer nil)
+(make-variable-buffer-local 'nrepl-sync-synced-buffer)
 
 (defun nrepl-sync-in (host port &optional project)
   "Connect nrepl to HOST and PORT, associate it with the current
@@ -33,7 +36,7 @@ See the lein-sync plugin for a way to generate .sync.clj."
                         (read-string "Port: " port nil port)))
                      (when current-prefix-arg
                        (ido-read-directory-name "Project: "))))
-  (setq nrepl-current-clojure-buffer (current-buffer))
+  (setq cider-current-clojure-buffer (current-buffer))
   (let ((project-dir
          (nrepl-project-directory-for
           (or project (nrepl-current-dir)))))
@@ -41,6 +44,7 @@ See the lein-sync plugin for a way to generate .sync.clj."
       (let ((process (nrepl-connect host port)))
         (setq nrepl-sync-last process)
         (with-current-buffer (process-buffer process)
+          (setq nrepl-sync-synced-buffer t)
           (setq nrepl-sync-need-sync t)
           (setq nrepl-project-dir project-dir)
         (message "Connecting to nREPL on %s:%s..." host port)))))
@@ -76,6 +80,6 @@ See the lein-sync plugin for a way to generate .sync.clj."
           'nrepl-sync-connect)
 
 (eval-after-load 'clojure-mode
-  '(define-key clojure-mode-map (kbd "C-c M-d") 'nrepl-sync-in))
+  '(define-key clojure-mode-map (kbd "C-c M-p") 'nrepl-sync-in))
 
 (provide 'nrepl-sync)
