@@ -45,6 +45,12 @@ Put `[lein-sync "0.1.0]` into the `:plugins` vector of your
 `:user` profile.
 
 
+## Releases
+
+### 0.2
+
+ - Now connects on first attempt.
+ - Emacs mode now uses cider/nrepl-client.el
 
 
 ## License
