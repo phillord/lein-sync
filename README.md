@@ -16,7 +16,7 @@ This is okay as a quick fix, but if you need to do this often, it's painful.
 What you really want to do is create a new leiningen project, and add all of
 the tools and scripts that you use regularly to this. lein-sync is for this
 purpose; it generates a file `.sync.clj` which when evaled in the REPL will
-make sync dependencies and classpaths to those of the current project.
+sync dependencies and classpaths to those of the current project.
 
 ## Motivation
 
@@ -41,11 +41,15 @@ nrepl and sync it for you. To use add `(require 'nrepl-sync)` to your .emacs.
 
 ## Installation
 
-Put `[lein-sync "0.1.0]` into the `:plugins` vector of your
+Put `[lein-sync "0.3]` into the `:plugins` vector of your
 `:user` profile.
 
 
 ## Releases
+
+### 0.3
+ - Simplified connection logic
+ - License update
 
 ### 0.2
 
@@ -55,7 +59,9 @@ Put `[lein-sync "0.1.0]` into the `:plugins` vector of your
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright 2013, 2014 Phillip Lord, Newcastle University
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+The leiningen code (written in Clojure) is licensed under LGPL3. Please see
+COPYING.lesser for details.
+
+The Emacs associated code is licensed under GPL3. Please see COPYING for details.

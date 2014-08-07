@@ -1,6 +1,6 @@
 ;; The contents of this file are subject to the GPL License, Version 3.0.
 ;;
-;; Copyright (C) 2013, Phillip Lord, Newcastle University
+;; Copyright (C) 2013, 2014, Phillip Lord, Newcastle University
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -17,11 +17,8 @@
 
 (require 'cider)
 
-(defvar nrepl-sync-need-sync nil)
-(make-variable-buffer-local 'nrepl-sync-need-sync)
-
-(defvar nrepl-sync-synced-buffer nil)
-(make-variable-buffer-local 'nrepl-sync-synced-buffer)
+(defvar nrepl-sync-needed nil)
+(make-variable-buffer-local 'nrepl-sync-needed)
 
 (defun nrepl-sync-in (host port &optional project)
   "Connect nrepl to HOST and PORT, associate it with the current
@@ -42,12 +39,11 @@ See the lein-sync plugin for a way to generate .sync.clj."
           (or project (nrepl-current-dir)))))
     (when (nrepl-check-for-repl-buffer `(,host ,port) project-dir)
       (let ((process (nrepl-connect host port)))
-        (setq nrepl-sync-last process)
         (with-current-buffer (process-buffer process)
-          (setq nrepl-sync-synced-buffer t)
-          (setq nrepl-sync-need-sync t)
+          (message "process buffer: %s" (current-buffer))
+          (setq nrepl-sync-needed t)
           (setq nrepl-project-dir project-dir)
-        (message "Connecting to nREPL on %s:%s..." host port)))))
+          (message "Connecting to nREPL on %s:%s..." host port))))))
 
 (defun nrepl-message-handler (buffer message)
   "Make a handler for evaluating and printing result in BUFFER."
@@ -62,19 +58,17 @@ See the lein-sync plugin for a way to generate .sync.clj."
                                  '())))
 
 (defun nrepl-sync-connect ()
-  (dolist (process (process-list))
-    (with-current-buffer (process-buffer process)
-      (when nrepl-sync-need-sync
-        ;; need load-file maybe here!
-        (let ((sync-string
-               (format "(load-file \"%s/.sync.clj\")"
-                       (expand-file-name nrepl-project-dir))))
-          (setq nrepl-sync-need-sync nil)
-          (message "Synchronizing buffer...")
-          (nrepl-send-string
-           sync-string
-           (nrepl-message-handler (current-buffer)
-                                  "Synchronizing buffer...done"))))))))
+  (when nrepl-sync-needed 
+    (with-current-buffer
+        (nrepl-current-connection-buffer)
+      (let ((sync-string
+             (format "(load-file \"%s/.sync.clj\")"
+                     (expand-file-name nrepl-project-dir))))
+        (message "sync-connect %s" (current-buffer))
+        (nrepl-send-string
+         sync-string
+         (nrepl-message-handler (current-buffer)
+                                "Synchronizing buffer...done"))))))
 
 (add-hook 'nrepl-connected-hook
           'nrepl-sync-connect)
