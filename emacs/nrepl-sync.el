@@ -1,4 +1,11 @@
+;;; nrepl-sync.el --- connect to nrepl port and eval .sync.clj.
+;;
 ;; The contents of this file are subject to the GPL License, Version 3.0.
+;;
+;; Author: Phillip Lord <phillip.lord@newcastle.ac.uk>
+;; URL: https://github.com/phillord/lein-sync
+;; Version: 0.3.1-SNAPSHOT
+;; Package-Requires: ((cider "0.6"))
 ;;
 ;; Copyright (C) 2013, 2014, Phillip Lord, Newcastle University
 ;;
